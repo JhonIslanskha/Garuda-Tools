@@ -1,0 +1,89 @@
+#!/usr/bin/env python3
+
+#        Copyright (C) 2017 M4st3r Linux Indonesia (Jh0n 1sl4nskh4_404)
+
+import shutil
+import distutils
+import getopt
+import sys
+import os
+
+def print_help():
+	print("usage: -i <install> -u <uninstall> -h <help>")
+
+
+def install():
+	print("installing GarudaTools")
+
+	print("creating dictionary /usr/share/GarudaTools")
+
+	if os.path.exists("/usr/share/GarudaTools/"):
+		print("removing exist installion...")
+		shutil.rmtree("/usr/share/GarudaTools/")
+
+	try:
+
+		os.mkdir("/usr/share/GarudaTools")
+
+	except PermissionError:
+		print("permission error: permission denied")
+		return
+
+	print("copying files...")
+	shutil.copyfile("Garuda", "/usr/share/GarudaTools/Garuda")
+
+	shutil.copyfile("license", "/usr/share/GarudaTools/license")
+	shutil.copyfile("changelog", "/usr/share/GarudaTools/changelog")
+	shutil.copyfile("readme", "/usr/share/GarudaTools/readme")
+
+	shutil.copytree("core", "/usr/share/GarudaTools/core/")
+	shutil.copytree("modules", "/usr/share/GarudaTools/modules/")
+
+	print("writing bash script...")
+	f = open("/usr/bin/Garuda", "w")
+	f.write("#!/bin/sh\n/usr/share/GarudaTools/Garuda $@")
+	f.close()
+
+	print("giving executeable permissions...")
+	os.system("chmod +x /usr/share/GarudaTools/Garuda")
+	os.system("chmod +x /usr/bin/Garuda")
+
+def uninstall():
+	print("uninstalling Garuda Tools")
+
+	print("removing GarudaTools...")
+	try:
+		shutil.rmtree("/usr/share/GarudaTools/")
+	except FileNotFoundError:
+		pass
+
+	except PermissionError:
+		print("permission error: permission denied")
+		return
+
+	print("removing bash script...")
+	try:
+		os.remove("/usr/bin/Garuda")
+	except FileNotFoundError:
+		pass
+
+	print("Garuda Tools uninstalled successfully")
+
+if __name__ == "__main__":
+	if not os.geteuid() == 0:
+		print("warning: no root access")
+
+	if len(sys.argv[1:]) > 1:
+		print("invalid argument")
+		print_help()
+
+	elif len(sys.argv[1:]) == 1:
+		if sys.argv[1] == '-i':
+			install()
+		elif sys.argv[1] == '-u':
+			uninstall()
+		elif sys.argv[1] == '-h':
+			print_help()
+		else:
+			print("invalid argument")
+			print_help()
